@@ -92,7 +92,13 @@ class Yahoo(BaseSource):
         return datetime.fromtimestamp(ts, tz=timezone.utc).date().isoformat()
 
     def _amount(self, amounts, type, i):
-        if type == "mid" and amounts["high"] != "null" and amounts["low"] != "null":
+        if (
+            type == "mid"
+            and amounts["high"] != "null"
+            and amounts["high"] is not None
+            and amounts["low"] != "null"
+            and amounts["low"] is not None
+        ):
             return sum([Decimal(amounts["high"][i]), Decimal(amounts["low"][i])]) / 2
         elif amounts[type] != "null" and amounts[type][i] is not None:
             return Decimal(amounts[type][i])
