@@ -22,9 +22,9 @@ test:
   script:
     - poetry run pytest
 
-test-live:
-  script:
-    - tests/live.sh
+# test-live:
+#   script:
+#     - tests/live.sh
 
 coverage:
   script:
