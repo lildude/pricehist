@@ -53,7 +53,7 @@ class BankOfCanada(BaseSource):
             raise exceptions.BadResponse(str(e)) from e
 
         try:
-            data = json.loads(response.content)
+            data = json.loads(response.content, parse_float=Decimal)
             series_names = data["series"].keys()
             fx_series_names = [
                 n for n in series_names if len(n) == 8 and n[0:2] == "FX"
@@ -101,7 +101,7 @@ class BankOfCanada(BaseSource):
         text = response.text
 
         try:
-            result = json.loads(response.content)
+            result = json.loads(response.content, parse_float=Decimal)
         except Exception as e:
             raise exceptions.ResponseParsingError(str(e)) from e
 

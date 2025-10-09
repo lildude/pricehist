@@ -165,7 +165,7 @@ class AlphaVantage(BaseSource):
             raise exceptions.BadResponse(str(e)) from e
 
         try:
-            data = json.loads(response.content)
+            data = json.loads(response.content, parse_float=Decimal)
         except Exception as e:
             raise exceptions.ResponseParsingError(str(e)) from e
 
@@ -208,7 +208,7 @@ class AlphaVantage(BaseSource):
             raise exceptions.BadResponse(str(e)) from e
 
         try:
-            data = json.loads(response.content)
+            data = json.loads(response.content, parse_float=Decimal)
         except Exception as e:
             raise exceptions.ResponseParsingError(str(e)) from e
 
@@ -259,7 +259,7 @@ class AlphaVantage(BaseSource):
             raise exceptions.BadResponse(str(e)) from e
 
         try:
-            data = json.loads(response.content)
+            data = json.loads(response.content, parse_float=Decimal)
         except Exception as e:
             raise exceptions.ResponseParsingError(str(e)) from e
 
@@ -300,7 +300,7 @@ class AlphaVantage(BaseSource):
             raise exceptions.BadResponse(str(e)) from e
 
         try:
-            data = json.loads(response.content)
+            data = json.loads(response.content, parse_float=Decimal)
         except Exception as e:
             raise exceptions.ResponseParsingError(str(e)) from e
 

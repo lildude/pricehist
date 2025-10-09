@@ -126,7 +126,7 @@ class CoinMarketCap(BaseSource):
             raise exceptions.BadResponse(str(e)) from e
 
         try:
-            parsed = json.loads(response.content)
+            parsed = json.loads(response.content, parse_float=Decimal)
         except Exception as e:
             raise exceptions.ResponseParsingError(str(e)) from e
 
@@ -314,7 +314,7 @@ class CoinMarketCap(BaseSource):
             raise exceptions.BadResponse(str(e)) from e
 
         try:
-            parsed = json.loads(response.content)
+            parsed = json.loads(response.content, parse_float=Decimal)
         except Exception as e:
             raise exceptions.ResponseParsingError(str(e)) from e
 

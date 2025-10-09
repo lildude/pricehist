@@ -54,8 +54,10 @@ class CoinbasePro(BaseSource):
             raise exceptions.BadResponse(str(e)) from e
 
         try:
-            products_data = json.loads(products_response.content)
-            currencies_data = json.loads(currencies_response.content)
+            products_data = json.loads(products_response.content, parse_float=Decimal)
+            currencies_data = json.loads(
+                currencies_response.content, parse_float=Decimal
+            )
             currencies = {c["id"]: c for c in currencies_data}
 
             results = []
@@ -143,7 +145,7 @@ class CoinbasePro(BaseSource):
                         "open": candle[3],
                         "close": candle[4],
                     }
-                    for candle in json.loads(response.content)
+                    for candle in json.loads(response.content, parse_float=Decimal)
                     if start <= self._ts_to_date(candle[0]) <= end
                 ]
             )

@@ -52,7 +52,7 @@ class CoinDesk(BaseSource):
             raise exceptions.BadResponse(str(e)) from e
 
         try:
-            data = json.loads(response.content)
+            data = json.loads(response.content, parse_float=Decimal)
             relevant = [i for i in data if i["currency"] not in ["BTC", "XBT"]]
             results = [
                 (f"BTC/{i['currency']}", f"Bitcoin against {i['country']}")
@@ -119,7 +119,7 @@ class CoinDesk(BaseSource):
                 raise exceptions.BadResponse(str(e)) from e
 
         try:
-            result = json.loads(response.content)
+            result = json.loads(response.content, parse_float=Decimal)
         except Exception as e:
             raise exceptions.ResponseParsingError(str(e)) from e
 
