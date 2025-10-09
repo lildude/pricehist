@@ -134,11 +134,11 @@ name="CoinMarketCap"
 cmd="pricehist fetch coinmarketcap BTC/EUR -s 2021-01-04 -e 2021-01-08"
 read -r -d '' expected <<END
 date,base,quote,amount,source,type
-2021-01-04,BTC,EUR,25322.5034586073,coinmarketcap,mid
-2021-01-05,BTC,EUR,26318.9928757682,coinmarketcap,mid
-2021-01-06,BTC,EUR,28570.9945210226,coinmarketcap,mid
-2021-01-07,BTC,EUR,31200.8342706036,coinmarketcap,mid
-2021-01-08,BTC,EUR,32157.05279624555,coinmarketcap,mid
+2021-01-04,BTC,EUR,25329.11017016145,coinmarketcap,mid
+2021-01-05,BTC,EUR,26321.26752264665,coinmarketcap,mid
+2021-01-06,BTC,EUR,28571.40721426555,coinmarketcap,mid
+2021-01-07,BTC,EUR,31200.63910282675,coinmarketcap,mid
+2021-01-08,BTC,EUR,32154.2447680312,coinmarketcap,mid
 END
 run_test "$name" "$cmd" "$expected"
 
