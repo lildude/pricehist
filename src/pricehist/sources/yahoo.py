@@ -158,7 +158,7 @@ class Yahoo(BaseSource):
             raise exceptions.BadResponse(str(e)) from e
 
         try:
-            data = json.loads(response.content)
+            data = json.loads(response.content, parse_float=Decimal)
         except Exception as e:
             raise exceptions.ResponseParsingError(
                 "The data couldn't be parsed. "

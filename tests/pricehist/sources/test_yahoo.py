@@ -110,14 +110,14 @@ def test_fetch_requests_and_receives_correct_times(src, type, recent_ok):
     assert req.params["period1"] == str(timestamp("2021-01-04"))
     assert req.params["period2"] == str(timestamp("2021-01-09"))  # rounded up one
     assert req.params["interval"] == "1d"
-    assert series.prices[0] == Price("2021-01-04", Decimal("243.2566680908203125"))
-    assert series.prices[-1] == Price("2021-01-08", Decimal("293.339996337890625"))
+    assert series.prices[0] == Price("2021-01-04", Decimal("243.2566680908203"))
+    assert series.prices[-1] == Price("2021-01-08", Decimal("293.3399963378906"))
 
 
 def test_fetch_ignores_any_extra_row(src, type, recent_ok):
     series = src.fetch(Series("TSLA", "", type, "2021-01-04", "2021-01-07"))
-    assert series.prices[0] == Price("2021-01-04", Decimal("243.2566680908203125"))
-    assert series.prices[-1] == Price("2021-01-07", Decimal("272.013336181640625"))
+    assert series.prices[0] == Price("2021-01-04", Decimal("243.2566680908203"))
+    assert series.prices[-1] == Price("2021-01-07", Decimal("272.0133361816406"))
 
 
 def test_fetch_requests_logged(src, type, recent_ok, caplog):
@@ -137,12 +137,12 @@ def test_fetch_types_all_available(src, recent_ok):
     low = src.fetch(Series("TSLA", "", "low", "2021-01-04", "2021-01-08"))
     cls = src.fetch(Series("TSLA", "", "close", "2021-01-04", "2021-01-08"))
     mid = src.fetch(Series("TSLA", "", "mid", "2021-01-04", "2021-01-08"))
-    assert adj.prices[0].amount == Decimal("243.2566680908203125")
+    assert adj.prices[0].amount == Decimal("243.2566680908203")
     assert opn.prices[0].amount == Decimal("239.82000732421875")
     assert hgh.prices[0].amount == Decimal("248.163330078125")
-    assert low.prices[0].amount == Decimal("239.0633392333984375")
-    assert cls.prices[0].amount == Decimal("243.2566680908203125")
-    assert mid.prices[0].amount == Decimal("243.61333465576171875")
+    assert low.prices[0].amount == Decimal("239.06333923339844")
+    assert cls.prices[0].amount == Decimal("243.2566680908203")
+    assert mid.prices[0].amount == Decimal("243.61333465576172")
 
 
 def test_fetch_type_mid_is_mean_of_low_and_high(src, recent_ok):
@@ -159,15 +159,15 @@ def test_fetch_type_mid_is_mean_of_low_and_high(src, recent_ok):
 
 def test_fetch_from_before_start(src, type, long_ok):
     series = src.fetch(Series("IBM", "", type, "1900-01-01", "2021-01-08"))
-    assert series.prices[0] == Price("1962-01-02", Decimal("1.5133211612701416015625"))
-    assert series.prices[-1] == Price("2021-01-08", Decimal("103.2923736572265625"))
+    assert series.prices[0] == Price("1962-01-02", Decimal("1.5133211612701416"))
+    assert series.prices[-1] == Price("2021-01-08", Decimal("103.29237365722656"))
     assert len(series.prices) > 9
 
 
 def test_fetch_skips_dates_with_nulls(src, type, with_null_ok):
     series = src.fetch(Series("INR=X", "", type, "2017-07-10", "2017-07-12"))
-    assert series.prices[0] == Price("2017-07-10", Decimal("64.61170196533203125"))
-    assert series.prices[1] == Price("2017-07-12", Decimal("64.52559661865234375"))
+    assert series.prices[0] == Price("2017-07-10", Decimal("64.61170196533203"))
+    assert series.prices[1] == Price("2017-07-12", Decimal("64.52559661865234"))
     assert len(series.prices) == 2
 
 
