@@ -53,6 +53,16 @@ def source(pricehist_source):
 
             try:
                 series = pricehist_source.fetch(Series(base, quote, type, start, end))
+            except exceptions.InvalidPair:
+                if self._should_retry_without_quote(requested_quote):
+                    try:
+                        series = pricehist_source.fetch(
+                            Series(base, "", type, start, end)
+                        )
+                    except exceptions.SourceError:
+                        return None
+                else:
+                    return None
             except exceptions.SourceError:
                 return None
 
@@ -85,5 +95,12 @@ def source(pricehist_source):
             self, requested_quote: str, fetched_quote: str
         ) -> bool:
             return requested_quote in ("GBX", "GBp") and fetched_quote in ("GBX", "GBp")
+
+        def _should_retry_without_quote(self, requested_quote: str) -> bool:
+            try:
+                source_id = pricehist_source.id()
+            except Exception:
+                source_id = ""
+            return source_id == "yahoo" and requested_quote in ("GBX", "GBp")
 
     return Source
