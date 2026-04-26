@@ -92,6 +92,36 @@ def test_get_prices_series_price_type(pricehist_source, source, ltz):
     )
 
 
+def test_get_prices_series_gbx_gbp_converts_to_gbp(
+    pricehist_source, source, ltz, mocker
+):
+    pricehist_source.fetch = mocker.MagicMock(
+        return_value=Series(
+            "FWRG.L",
+            "GBX",
+            "close",
+            "2021-01-01",
+            "2021-01-03",
+            prices=[
+                Price("2021-01-01", Decimal("123.4")),
+                Price("2021-01-02", Decimal("250")),
+            ],
+        )
+    )
+    ticker = "FWRG.L:GBX:close"
+    begin = datetime(2021, 1, 1, tzinfo=ltz)
+    end = datetime(2021, 1, 2, tzinfo=ltz)
+
+    result = source.get_prices_series(ticker, begin, end)
+
+    assert result == [
+        beanprice.SourcePrice(
+            Decimal("1.234"), datetime(2021, 1, 1, tzinfo=ltz), "GBP"
+        ),
+        beanprice.SourcePrice(Decimal("2.5"), datetime(2021, 1, 2, tzinfo=ltz), "GBP"),
+    ]
+
+
 def test_get_historical_price(pricehist_source, source, ltz):
     ticker = "BTC:USD:high"
     time = datetime(2021, 1, 3, tzinfo=ltz)

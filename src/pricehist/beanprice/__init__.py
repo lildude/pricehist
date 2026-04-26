@@ -43,6 +43,7 @@ def source(pricehist_source):
             time_end: datetime,
         ) -> Optional[List[SourcePrice]]:
             base, quote, type = self._decode(ticker)
+            requested_quote = quote
 
             start = time_begin.date().isoformat()
             end = time_end.date().isoformat()
@@ -54,6 +55,12 @@ def source(pricehist_source):
                 series = pricehist_source.fetch(Series(base, quote, type, start, end))
             except exceptions.SourceError:
                 return None
+
+            if self._should_convert_to_gbp(
+                requested_quote=requested_quote,
+                fetched_quote=series.quote,
+            ):
+                series = series.divide_by_100().rename_quote("GBP")
 
             return [
                 SourcePrice(
@@ -73,5 +80,10 @@ def source(pricehist_source):
             base, quote, candidate_type = (parts + [""] * 3)[0:3]
             type = candidate_type or pricehist_source.types()[0]
             return (base, quote, type)
+
+        def _should_convert_to_gbp(
+            self, requested_quote: str, fetched_quote: str
+        ) -> bool:
+            return requested_quote in ("GBX", "GBp") and fetched_quote in ("GBX", "GBp")
 
     return Source
