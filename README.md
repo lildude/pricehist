@@ -154,6 +154,17 @@ P 2021/01/07 € $1.5836
 P 2021/01/08 € $1.5758
 ```
 
+When using the CLI, `--fmt-quote GBP` also has special behavior for prices
+returned in pence. If the fetched quote currency is `GBX` or `GBp`, `pricehist`
+will divide each amount by 100 and output the quote as `GBP`.
+
+```
+pricehist fetch yahoo FWRG.L -s 2026-01-05 -e 2026-01-09 --fmt-quote GBP
+```
+
+This is useful for UK-listed symbols where upstream data is in pence but you
+want output in pounds.
+
 ### Fetch new prices only
 
 You can update an existing file without refetching the prices you already have.
@@ -305,6 +316,19 @@ You can fetch a series of prices by providing a Beancount file as input.
   price: "USD:pricehist.beanprice.coindesk/BTC:USD:close"
 ```
 
+For Yahoo! Finance and Alpha Vantage stock symbols priced in pence, set the
+ticker quote to `GBX` or `GBp`. `pricehist` will divide the returned price by
+100 and emit `GBP` in the output.
+
+```
+; input.beancount
+2024-01-01 commodity FWRG.L
+  price: "GBP:pricehist.beanprice.yahoo/FWRG.L:GBX:close"
+
+2024-01-01 commodity FWRG.LON
+  price: "GBP:pricehist.beanprice.alphavantage/FWRG.LON:GBX:close"
+```
+
 ```
 bean-price input.beancount --update --update-rate daily --inactive --clear-cache
 ```
@@ -326,6 +350,11 @@ be appended, separated by commas.
 The module name will be of the form `pricehist.beanprice.<source_id>`.
 
 The ticker symbol will be of the form `BASE:QUOTE:TYPE`.
+
+For most sources, `QUOTE` is the quote currency you want returned. For Yahoo!
+Finance and Alpha Vantage stock symbols that are quoted in pence, specifying
+`GBX` or `GBp` as the ticker quote tells `pricehist` to interpret the upstream
+price as pence, convert it to pounds, and return `GBP` in the output.
 
 Any non-alphanumeric characters except the equals sign (`=`), hyphen (`-`),
 period (`.`), or parentheses (`(` or `)`) are special characters that need to
