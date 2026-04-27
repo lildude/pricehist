@@ -318,8 +318,8 @@ You can fetch a series of prices by providing a Beancount file as input.
 
 For Yahoo! Finance stock symbols quoted in pence (`GBp`), `pricehist`
 automatically divides the returned price by 100 when the Beancount quote
-currency is `GBP`. If you use `GBp` or `GBX` as the Beancount quote currency,
-the value is left unmodified.
+currency is `GBP`. If you use `GBX` as the Beancount quote currency, the value
+is left unmodified.
 
 ```
 ; input.beancount
