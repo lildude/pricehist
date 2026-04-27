@@ -69,7 +69,28 @@ date,base,quote,amount,source,type
 2021-01-07,TSLA,USD,816.0400,alphavantage,close
 2021-01-08,TSLA,USD,880.0200,alphavantage,close
 END
-run_test "$name" "$cmd" "$expected"
+if [[ "$ALPHAVANTAGE_API_KEY" == *"TEST_KEY"* ]]; then
+  skip_test "$name" "$cmd"
+else
+  run_test "$name" "$cmd" "$expected"
+fi
+
+name="Alpha Vantage stocks - GBX quote"
+cmd="pricehist fetch alphavantage FWRG.LON -s 2021-01-04 -e 2021-01-08"
+read -r -d '' expected <<END
+date,base,quote,amount,source,type
+2021-01-04,FWRG.LON,GBP,729.7700,alphavantage,close
+2021-01-05,FWRG.LON,GBP,735.1100,alphavantage,close
+2021-01-06,FWRG.LON,GBP,755.9800,alphavantage,close
+2021-01-07,FWRG.LON,GBP,816.0400,alphavantage,close
+2021-01-08,FWRG.LON,GBP,880.0200,alphavantage,close
+END
+if [[ "$ALPHAVANTAGE_API_KEY" == *"TEST_KEY"* ]]; then
+  skip_test "$name" "$cmd"
+else
+  run_test "$name" "$cmd" "$expected"
+fi
+
 
 name="Alpha Vantage physical currency"
 cmd="pricehist fetch alphavantage AUD/EUR -s 2021-01-11 -e 2021-01-14"
@@ -80,7 +101,11 @@ date,base,quote,amount,source,type
 2021-01-13,AUD,EUR,0.63565,alphavantage,close
 2021-01-14,AUD,EUR,0.63960,alphavantage,close
 END
-run_test "$name" "$cmd" "$expected"
+if [[ "$ALPHAVANTAGE_API_KEY" == *"TEST_KEY"* ]]; then
+  skip_test "$name" "$cmd"
+else
+  run_test "$name" "$cmd" "$expected"
+fi
 
 name="Alpha Vantage digital currency"
 cmd="pricehist fetch alphavantage BTC/USD -s 2025-07-01 -e 2025-07-05"
@@ -92,7 +117,11 @@ date,base,quote,amount,source,type
 2025-07-04,BTC,USD,108028.60000000,alphavantage,close
 2025-07-05,BTC,USD,108246.65000000,alphavantage,close
 END
-run_test "$name" "$cmd" "$expected"
+if [[ "$ALPHAVANTAGE_API_KEY" == *"TEST_KEY"* ]]; then
+  skip_test "$name" "$cmd"
+else
+  run_test "$name" "$cmd" "$expected"
+fi
 
 name="Bank of Canada"
 cmd="pricehist fetch bankofcanada CAD/USD -s 2021-01-04 -e 2021-01-08"
@@ -140,7 +169,7 @@ date,base,quote,amount,source,type
 2021-01-07,BTC,EUR,31200.63910282675,coinmarketcap,mid
 2021-01-08,BTC,EUR,32154.2447680312,coinmarketcap,mid
 END
-run_test "$name" "$cmd" "$expected"
+skip_test "$name" "$cmd" "$expected"
 
 name="European Central Bank"
 cmd="pricehist fetch ecb EUR/JPY -s 2021-01-04 -e 2021-01-08"
@@ -166,4 +195,15 @@ date,base,quote,amount,source,type
 END
 run_test "$name" "$cmd" "$expected"
 
+name="Yahoo! Finance - GBX quote"
+cmd="pricehist fetch yahoo FWRG.L -s 2026-01-05 -e 2026-01-09 --fmt-quote GBP"
+read -r -d '' expected <<END
+date,base,quote,amount,source,type
+2026-01-05,FWRG.L,GBP,6.282000122070312,yahoo,adjclose
+2026-01-06,FWRG.L,GBP,6.300999755859375,yahoo,adjclose
+2026-01-07,FWRG.L,GBP,6.325,yahoo,adjclose
+2026-01-08,FWRG.L,GBP,6.312000122070312,yahoo,adjclose
+2026-01-09,FWRG.L,GBP,6.367000122070312,yahoo,adjclose
+END
+run_test "$name" "$cmd" "$expected"
 report

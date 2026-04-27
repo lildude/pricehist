@@ -20,9 +20,9 @@ lxml = "^5.1.0"
 cssselect = "^1.1.0"
 curlify = "^2.2.1"
 
-[poetry.group.dev.dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"
-black = "^22.10.0"
+black = "^24.8.0"
 flake8 = "^7.1.0"
 isort = "^5.8.0"
 responses = "^0.13.3"
