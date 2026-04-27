@@ -316,17 +316,15 @@ You can fetch a series of prices by providing a Beancount file as input.
   price: "USD:pricehist.beanprice.coindesk/BTC:USD:close"
 ```
 
-For Yahoo! Finance and Alpha Vantage stock symbols priced in pence, set the
-ticker quote to `GBX` or `GBp` and add an `@GBP` marker at the end. `pricehist`
-will divide the returned price by 100 and emit `GBP` in the output.
+For Yahoo! Finance stock symbols quoted in pence (`GBp`), `pricehist`
+automatically divides the returned price by 100 when the Beancount quote
+currency is `GBP`. If you use `GBp` or `GBX` as the Beancount quote currency,
+the value is left unmodified.
 
 ```
 ; input.beancount
 2024-01-01 commodity FWRG.L
-  price: "GBP:pricehist.beanprice.yahoo/FWRG.L:close@GBP"
-
-2024-01-01 commodity FWRG.LON
-  price: "GBP:pricehist.beanprice.alphavantage/FWRG.LON:close@GBP"
+  price: "GBP:pricehist.beanprice.yahoo/FWRG.L"
 ```
 
 ```
@@ -349,14 +347,12 @@ be appended, separated by commas.
 
 The module name will be of the form `pricehist.beanprice.<source_id>`.
 
-The ticker symbol will be of the form `BASE:QUOTE:TYPE[@ OUTPUT_QUOTE]`. The optional
-`@OUTPUT_QUOTE` marker is used to specify a desired output currency when it differs
-from the source quote currency (e.g., `FWRG.L:GBX:close@GBP` to convert pence to pounds).
+The ticker symbol will be of the form `BASE:QUOTE:TYPE`.
 
 For most sources, `QUOTE` is the quote currency you want returned. For Yahoo!
-Finance and Alpha Vantage stock symbols that are quoted in pence, specifying
-`GBX` or `GBp` as the ticker quote and adding `@GBP` at the end tells `pricehist`
-to interpret the upstream price as pence, convert it to pounds, and return `GBP` in the output.
+Finance stock symbols that are quoted in pence, `pricehist.beanprice.yahoo`
+interprets upstream `GBp` prices as pence. It converts to pounds only when the
+requested Beancount quote currency is `GBP`.
 
 Any non-alphanumeric characters except the equals sign (`=`), hyphen (`-`),
 period (`.`), or parentheses (`(` or `)`) are special characters that need to
