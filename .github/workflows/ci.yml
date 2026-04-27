@@ -9,6 +9,9 @@ on:
       - master
   merge_group:
 
+permissions:
+  contents: read
+
 env:
   PIP_CACHE_DIR: .cache/pip
   POETRY_CACHE_DIR: .cache/poetry
