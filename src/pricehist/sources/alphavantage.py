@@ -169,6 +169,9 @@ class AlphaVantage(BaseSource):
         )
 
     def _stock_currency(self, symbol):
+        if symbol.upper().endswith(".LON"):
+            return "GBX"
+
         data = self._search_data(symbol)
         for match in data["bestMatches"]:
             if match["1. symbol"] == symbol:

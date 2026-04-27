@@ -447,24 +447,29 @@ def test_fetch_stock_per_second_rate_limit(src, type, search_ok, requests_mock):
 def test_fetch_stock_with_explicit_gbx_quote(
     src, type, physical_list_ok, digital_list_ok, requests_mock
 ):
-    requests_mock.add(
-        responses.GET,
-        search_url,
-        body=(
-            '{"bestMatches":['
-            '{"1. symbol":"FWRG.LON",'
-            '"2. name":"Invesco FTSE All-World UCITS ETF USD Acc",'
-            '"3. type":"Equity","4. region":"United Kingdom","8. currency":"GBX"}'
-            "]}"
-        ),
-        status=200,
-    )
     body = (Path(os.path.splitext(__file__)[0]) / "ibm-partial.json").read_text()
     requests_mock.add(responses.GET, stock_url, body=body, status=200)
 
     series = src.fetch(Series("FWRG.LON", "GBX", type, "2021-01-04", "2021-01-08"))
 
-    stock_req = requests_mock.calls[-1].request
+    stock_req = requests_mock.calls[2].request
+    assert stock_req.params["function"] == "TIME_SERIES_DAILY"
+    assert stock_req.params["symbol"] == "FWRG.LON"
+    assert (series.base, series.quote) == ("FWRG.LON", "GBX")
+    assert len(series.prices) == 5
+    assert series.prices[0] == Price("2021-01-04", Decimal("123.94"))
+
+
+def test_fetch_stock_lon_without_quote_skips_search_and_uses_gbx(
+    src, type, requests_mock
+):
+    body = (Path(os.path.splitext(__file__)[0]) / "ibm-partial.json").read_text()
+    requests_mock.add(responses.GET, stock_url, body=body, status=200)
+
+    series = src.fetch(Series("FWRG.LON", "", type, "2021-01-04", "2021-01-08"))
+
+    assert len(requests_mock.calls) == 1
+    stock_req = requests_mock.calls[0].request
     assert stock_req.params["function"] == "TIME_SERIES_DAILY"
     assert stock_req.params["symbol"] == "FWRG.LON"
     assert (series.base, series.quote) == ("FWRG.LON", "GBX")
