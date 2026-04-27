@@ -40,7 +40,7 @@ jobs:
         uses: ./.github/actions/setup-python-deps
 
       - name: Run tests
-        run: poetry run pytest
+        run: make test
 
   test-live:
     name: test-live
@@ -54,7 +54,7 @@ jobs:
         uses: ./.github/actions/setup-python-deps
 
       - name: Run live tests
-        run: tests/live.sh
+        run: make test-live
 
   coverage:
     name: coverage
