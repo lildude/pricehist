@@ -42,7 +42,7 @@ def source(pricehist_source):
             time_begin: datetime,
             time_end: datetime,
         ) -> Optional[List[SourcePrice]]:
-            base, quote, type = self._decode(ticker)
+            base, quote, type, output_quote = self._decode(ticker)
             requested_quote = quote
 
             start = time_begin.date().isoformat()
@@ -69,6 +69,7 @@ def source(pricehist_source):
             if self._should_convert_to_gbp(
                 requested_quote=requested_quote,
                 fetched_quote=series.quote,
+                output_quote=output_quote,
             ):
                 series = series.divide_by_100().rename_quote("GBP")
 
@@ -82,6 +83,11 @@ def source(pricehist_source):
             ]
 
         def _decode(self, ticker):
+            # Extract optional output currency marker (e.g., "FWRG.L:close@GBP")
+            output_quote = None
+            if "@" in ticker:
+                ticker, output_quote = ticker.rsplit("@", 1)
+
             # https://github.com/beancount/beanprice/blob/b05203/beanprice/price.py#L166
             parts = [
                 re.sub(r"_[0-9a-fA-F]{2}", lambda m: chr(int(m.group(0)[1:], 16)), part)
@@ -89,11 +95,16 @@ def source(pricehist_source):
             ]
             base, quote, candidate_type = (parts + [""] * 3)[0:3]
             type = candidate_type or pricehist_source.types()[0]
-            return (base, quote, type)
+            return (base, quote, type, output_quote)
 
         def _should_convert_to_gbp(
-            self, requested_quote: str, fetched_quote: str
+            self, requested_quote: str, fetched_quote: str, output_quote: Optional[str] = None
         ) -> bool:
+            # Convert if:
+            # 1. We requested GBX/GBp AND got GBX/GBp back (legacy behavior)
+            # 2. OR output_quote is GBP and we requested GBX/GBp (new behavior)
+            if output_quote == "GBP" and requested_quote in ("GBX", "GBp"):
+                return True
             return requested_quote in ("GBX", "GBp") and fetched_quote in ("GBX", "GBp")
 
         def _should_retry_without_quote(self, requested_quote: str) -> bool:

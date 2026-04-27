@@ -122,47 +122,77 @@ def test_get_prices_series_gbx_gbp_converts_to_gbp(
     ]
 
 
-    def test_get_prices_series_yahoo_with_explicit_gbx_quote_retries_without_quote(
-        ltz, mocker
-    ):
-        pricehist_source = mocker.MagicMock()
-        pricehist_source.id = mocker.MagicMock(return_value="yahoo")
-        pricehist_source.types = mocker.MagicMock(return_value=["close", "high", "low"])
-
-        invalid = exceptions.InvalidPair(
-            "FWRG.L", "GBX", pricehist_source, "Don't specify the quote currency."
-        )
-        converted_series = Series(
+def test_get_prices_series_with_output_quote_marker(
+    pricehist_source, source, ltz, mocker
+):
+    pricehist_source.fetch = mocker.MagicMock(
+        return_value=Series(
             "FWRG.L",
             "GBX",
             "close",
             "2021-01-01",
-            "2021-01-02",
+            "2021-01-03",
             prices=[
                 Price("2021-01-01", Decimal("123.4")),
                 Price("2021-01-02", Decimal("250")),
             ],
         )
-        pricehist_source.fetch = mocker.MagicMock(side_effect=[invalid, converted_series])
-        subject = beanprice.source(pricehist_source)()
+    )
+    ticker = "FWRG.L:close@GBP"
+    begin = datetime(2021, 1, 1, tzinfo=ltz)
+    end = datetime(2021, 1, 2, tzinfo=ltz)
 
-        result = subject.get_prices_series(
-            "FWRG.L:GBX:close",
-            datetime(2021, 1, 1, tzinfo=ltz),
-            datetime(2021, 1, 2, tzinfo=ltz),
-        )
+    result = source.get_prices_series(ticker, begin, end)
 
-        assert result == [
-            beanprice.SourcePrice(Decimal("1.234"), datetime(2021, 1, 1, tzinfo=ltz), "GBP"),
-            beanprice.SourcePrice(Decimal("2.5"), datetime(2021, 1, 2, tzinfo=ltz), "GBP"),
-        ]
-        assert pricehist_source.fetch.call_count == 2
-        assert pricehist_source.fetch.call_args_list[0].args[0] == Series(
-            "FWRG.L", "GBX", "close", "2021-01-01", "2021-01-02"
-        )
-        assert pricehist_source.fetch.call_args_list[1].args[0] == Series(
-            "FWRG.L", "", "close", "2021-01-01", "2021-01-02"
-        )
+    assert result == [
+        beanprice.SourcePrice(
+            Decimal("1.234"), datetime(2021, 1, 1, tzinfo=ltz), "GBP"
+        ),
+        beanprice.SourcePrice(Decimal("2.5"), datetime(2021, 1, 2, tzinfo=ltz), "GBP"),
+    ]
+
+
+def test_get_prices_series_yahoo_with_explicit_gbx_quote_retries_without_quote(
+    ltz, mocker
+):
+    pricehist_source = mocker.MagicMock()
+    pricehist_source.id = mocker.MagicMock(return_value="yahoo")
+    pricehist_source.types = mocker.MagicMock(return_value=["close", "high", "low"])
+
+    invalid = exceptions.InvalidPair(
+        "FWRG.L", "GBX", pricehist_source, "Don't specify the quote currency."
+    )
+    converted_series = Series(
+        "FWRG.L",
+        "GBX",
+        "close",
+        "2021-01-01",
+        "2021-01-02",
+        prices=[
+            Price("2021-01-01", Decimal("123.4")),
+            Price("2021-01-02", Decimal("250")),
+        ],
+    )
+    pricehist_source.fetch = mocker.MagicMock(side_effect=[invalid, converted_series])
+    subject = beanprice.source(pricehist_source)()
+
+    result = subject.get_prices_series(
+        "FWRG.L:close@GBP",
+        datetime(2021, 1, 1, tzinfo=ltz),
+        datetime(2021, 1, 2, tzinfo=ltz),
+    )
+
+    assert result == [
+        beanprice.SourcePrice(Decimal("1.234"), datetime(2021, 1, 1, tzinfo=ltz), "GBP"),
+        beanprice.SourcePrice(Decimal("2.5"), datetime(2021, 1, 2, tzinfo=ltz), "GBP"),
+    ]
+    assert pricehist_source.fetch.call_count == 2
+    assert pricehist_source.fetch.call_args_list[0].args[0] == Series(
+        "FWRG.L", "GBX", "close", "2021-01-01", "2021-01-02"
+    )
+    assert pricehist_source.fetch.call_args_list[1].args[0] == Series(
+        "FWRG.L", "", "close", "2021-01-01", "2021-01-02"
+    )
 
 
 def test_get_historical_price(pricehist_source, source, ltz):

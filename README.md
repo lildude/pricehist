@@ -317,16 +317,16 @@ You can fetch a series of prices by providing a Beancount file as input.
 ```
 
 For Yahoo! Finance and Alpha Vantage stock symbols priced in pence, set the
-ticker quote to `GBX` or `GBp`. `pricehist` will divide the returned price by
-100 and emit `GBP` in the output.
+ticker quote to `GBX` or `GBp` and add an `@GBP` marker at the end. `pricehist`
+will divide the returned price by 100 and emit `GBP` in the output.
 
 ```
 ; input.beancount
 2024-01-01 commodity FWRG.L
-  price: "GBP:pricehist.beanprice.yahoo/FWRG.L:GBX:close"
+  price: "GBP:pricehist.beanprice.yahoo/FWRG.L:close@GBP"
 
 2024-01-01 commodity FWRG.LON
-  price: "GBP:pricehist.beanprice.alphavantage/FWRG.LON:GBX:close"
+  price: "GBP:pricehist.beanprice.alphavantage/FWRG.LON:close@GBP"
 ```
 
 ```
@@ -349,12 +349,14 @@ be appended, separated by commas.
 
 The module name will be of the form `pricehist.beanprice.<source_id>`.
 
-The ticker symbol will be of the form `BASE:QUOTE:TYPE`.
+The ticker symbol will be of the form `BASE:QUOTE:TYPE[@ OUTPUT_QUOTE]`. The optional
+`@OUTPUT_QUOTE` marker is used to specify a desired output currency when it differs
+from the source quote currency (e.g., `FWRG.L:GBX:close@GBP` to convert pence to pounds).
 
 For most sources, `QUOTE` is the quote currency you want returned. For Yahoo!
 Finance and Alpha Vantage stock symbols that are quoted in pence, specifying
-`GBX` or `GBp` as the ticker quote tells `pricehist` to interpret the upstream
-price as pence, convert it to pounds, and return `GBP` in the output.
+`GBX` or `GBp` as the ticker quote and adding `@GBP` at the end tells `pricehist`
+to interpret the upstream price as pence, convert it to pounds, and return `GBP` in the output.
 
 Any non-alphanumeric characters except the equals sign (`=`), hyphen (`-`),
 period (`.`), or parentheses (`(` or `)`) are special characters that need to
