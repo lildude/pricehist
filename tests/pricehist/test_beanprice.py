@@ -186,9 +186,7 @@ def test_get_prices_series_non_yahoo_gbpence_not_converted(
         beanprice.SourcePrice(
             Decimal("123.4"), datetime(2021, 1, 1, tzinfo=ltz), "GBp"
         ),
-        beanprice.SourcePrice(
-            Decimal("250"), datetime(2021, 1, 2, tzinfo=ltz), "GBp"
-        ),
+        beanprice.SourcePrice(Decimal("250"), datetime(2021, 1, 2, tzinfo=ltz), "GBp"),
     ]
 
 

@@ -1,0 +1,51 @@
+name: Setup Python and dependencies
+description: Setup Python, cache Poetry, install Poetry, and install project dependencies.
+
+inputs:
+  python-version:
+    description: Python version to use
+    required: false
+    default: "3.x"
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: pip
+
+    - name: Cache Poetry cache
+      uses: actions/cache@v4
+      with:
+        path: .cache/poetry
+        key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-poetry-
+
+    - name: Install system dependencies for lxml
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libxml2-dev libxslt1-dev
+
+    - name: Install Poetry
+      shell: bash
+      run: pip install poetry
+
+    - name: Install dependencies
+      shell: bash
+      run: poetry install --with dev
+
+    - name: Add Poetry virtualenv to PATH
+      shell: bash
+      run: |
+        VENV_PATH=$(poetry env info --path)
+        if [ -z "$VENV_PATH" ]; then
+          echo "Error: Failed to get Poetry virtualenv path"
+          exit 1
+        fi
+        echo "$VENV_PATH/bin" >> $GITHUB_PATH
+        echo "VIRTUAL_ENV=$VENV_PATH" >> $GITHUB_ENV

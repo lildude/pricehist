@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - '*'
+  push:
+    branches:
+      - master
+  merge_group:
+
+env:
+  PIP_CACHE_DIR: .cache/pip
+  POETRY_CACHE_DIR: .cache/poetry
+
+jobs:
+  pre-commit:
+    name: pre-commit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python and dependencies
+        uses: ./.github/actions/setup-python-deps
+
+      - name: Run pre-commit checks
+        run: make pre-commit
+
+  test:
+    name: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python and dependencies
+        uses: ./.github/actions/setup-python-deps
+
+      - name: Run tests
+        run: make test
+
+  test-live:
+    name: test-live
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python and dependencies
+        uses: ./.github/actions/setup-python-deps
+
+      - name: Run live tests
+        run: make test-live
+
+  coverage:
+    name: coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python and dependencies
+        uses: ./.github/actions/setup-python-deps
+
+      - name: Run coverage
+        run: |
+          poetry run coverage run --source=pricehist -m pytest
+          poetry run coverage report
