@@ -363,7 +363,11 @@ class AlphaVantage(BaseSource):
 
     def _raise_for_generic_errors(self, data):
         if type(data) is dict:
-            if "Information" in data and "daily rate limits" in data["Information"]:
+            if "Information" in data and (
+                "rate limit" in data["Information"].lower()
+                or "daily rate limits" in data["Information"]
+                or "requests per" in data["Information"].lower()
+            ):
                 raise exceptions.RateLimit(data["Information"])
             if (
                 "Information" in data

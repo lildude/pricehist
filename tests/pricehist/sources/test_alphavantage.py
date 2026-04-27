@@ -67,6 +67,17 @@ rate_limit_json = (
     '" }'
 )
 
+per_second_rate_limit_json = (
+    '{ "Information": "'
+    "Thank you for using Alpha Vantage! Please consider spreading out your "
+    "free API requests more sparingly (1 request per second). You may "
+    "subscribe to any of the premium plans at "
+    "https://www.alphavantage.co/premium/ to lift the free key rate limit "
+    "(25 requests per day), raise the per-second burst limit, and instantly "
+    "unlock all premium endpoints"
+    '" }'
+)
+
 premium_json = (
     '{ "Information": "Thank you for using Alpha Vantage! This is a premium '
     "endpoint and there are multiple ways to unlock premium endpoints: (1) "
@@ -424,6 +435,13 @@ def test_fetch_stock_rate_limit(src, type, search_ok, requests_mock):
     with pytest.raises(exceptions.RateLimit) as e:
         src.fetch(Series("IBM", "", type, "2021-01-04", "2021-01-08"))
     assert "rate limit" in str(e.value)
+
+
+def test_fetch_stock_per_second_rate_limit(src, type, search_ok, requests_mock):
+    requests_mock.add(responses.GET, stock_url, body=per_second_rate_limit_json)
+    with pytest.raises(exceptions.RateLimit) as e:
+        src.fetch(Series("IBM", "", type, "2021-01-04", "2021-01-08"))
+    assert "rate limit" in str(e.value).lower()
 
 
 def test_fetch_stock_with_explicit_gbx_quote(
