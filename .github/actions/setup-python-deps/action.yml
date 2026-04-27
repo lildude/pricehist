@@ -38,3 +38,9 @@ runs:
     - name: Install dependencies
       shell: bash
       run: poetry install
+
+    - name: Add Poetry virtualenv to PATH
+      shell: bash
+      run: |
+        VENV_PATH=$(poetry env info --path)
+        echo "$VENV_PATH/bin" >> $GITHUB_PATH
