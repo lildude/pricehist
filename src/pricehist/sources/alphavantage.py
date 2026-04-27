@@ -92,35 +92,56 @@ class AlphaVantage(BaseSource):
         if series.quote == "":
             output_quote, data = self._stock_data(series)
         else:
-            if series.type == "adjclose":
-                raise exceptions.InvalidType(
-                    series.type, series.base, series.quote, self
-                )
-
             physical_symbols = [s for s, n in self._physical_symbols()]
-
-            if series.quote not in physical_symbols:
-                raise exceptions.InvalidPair(
-                    series.base,
-                    series.quote,
-                    self,
-                    "When given, the quote must be a physical currency.",
-                )
-
-            if series.base in physical_symbols:
-                data = self._physical_data(series)
-
-            elif series.base in [s for s, n in self._digital_symbols()]:
-                data = self._digital_data(series)
-
+            if series.quote in ["GBX", "GBp"]:
+                digital_symbols = [s for s, n in self._digital_symbols()]
+                if self._is_pence_stock_request(
+                    series, physical_symbols, digital_symbols
+                ):
+                    output_quote, data = self._stock_data(series)
+                    if output_quote not in ["GBX", "GBp"]:
+                        raise exceptions.InvalidPair(
+                            series.base,
+                            series.quote,
+                            self,
+                            "When given as the quote for a stock, GBX or GBp "
+                            "requires the stock to be quoted in pence.",
+                        )
+                else:
+                    raise exceptions.InvalidPair(
+                        series.base,
+                        series.quote,
+                        self,
+                        "When given, the quote must be a physical currency.",
+                    )
             else:
-                raise exceptions.InvalidPair(
-                    series.base,
-                    series.quote,
-                    self,
-                    "When a quote currency is given, the base must be a known "
-                    "physical or digital currency.",
-                )
+                if series.type == "adjclose":
+                    raise exceptions.InvalidType(
+                        series.type, series.base, series.quote, self
+                    )
+
+                if series.quote not in physical_symbols:
+                    raise exceptions.InvalidPair(
+                        series.base,
+                        series.quote,
+                        self,
+                        "When given, the quote must be a physical currency.",
+                    )
+
+                if series.base in physical_symbols:
+                    data = self._physical_data(series)
+
+                elif series.base in [s for s, n in self._digital_symbols()]:
+                    data = self._digital_data(series)
+
+                else:
+                    raise exceptions.InvalidPair(
+                        series.base,
+                        series.quote,
+                        self,
+                        "When a quote currency is given, the base must be a known "
+                        "physical or digital currency.",
+                    )
 
         prices = [
             Price(day, amount)
@@ -140,7 +161,17 @@ class AlphaVantage(BaseSource):
         else:
             return Decimal(entries[series.type])
 
+    def _is_pence_stock_request(self, series, physical_symbols, digital_symbols):
+        return (
+            series.quote in ["GBX", "GBp"]
+            and series.base not in physical_symbols
+            and series.base not in digital_symbols
+        )
+
     def _stock_currency(self, symbol):
+        if symbol.upper().endswith(".LON"):
+            return "GBX"
+
         data = self._search_data(symbol)
         for match in data["bestMatches"]:
             if match["1. symbol"] == symbol:
@@ -335,7 +366,11 @@ class AlphaVantage(BaseSource):
 
     def _raise_for_generic_errors(self, data):
         if type(data) is dict:
-            if "Information" in data and "daily rate limits" in data["Information"]:
+            if "Information" in data and (
+                "rate limit" in data["Information"].lower()
+                or "daily rate limits" in data["Information"]
+                or "requests per" in data["Information"].lower()
+            ):
                 raise exceptions.RateLimit(data["Information"])
             if (
                 "Information" in data

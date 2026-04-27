@@ -36,6 +36,8 @@ def fetch(series, source, output, invert: bool, quantize: int, fmt) -> str:
 
     if invert:
         series = series.invert()
+    if fmt.quote == "GBP" and series.quote in ("GBX", "GBp"):
+        series = series.divide_by_100()
     if quantize is not None:
         series = series.quantize(quantize)
 

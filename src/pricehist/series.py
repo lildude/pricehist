@@ -37,6 +37,15 @@ class Series:
     def rename_quote(self, new_quote):
         return replace(self, quote=new_quote)
 
+    def divide_by_100(self):
+        """Divide all prices by 100."""
+        return replace(
+            self,
+            prices=[
+                Price(date=p.date, amount=p.amount / Decimal(100)) for p in self.prices
+            ],
+        )
+
     def _quantize(self, amount, decimal_places):
         digits = len(amount.as_tuple().digits)
         exponent = amount.as_tuple().exponent

@@ -67,6 +67,17 @@ rate_limit_json = (
     '" }'
 )
 
+per_second_rate_limit_json = (
+    '{ "Information": "'
+    "Thank you for using Alpha Vantage! Please consider spreading out your "
+    "free API requests more sparingly (1 request per second). You may "
+    "subscribe to any of the premium plans at "
+    "https://www.alphavantage.co/premium/ to lift the free key rate limit "
+    "(25 requests per day), raise the per-second burst limit, and instantly "
+    "unlock all premium endpoints"
+    '" }'
+)
+
 premium_json = (
     '{ "Information": "Thank you for using Alpha Vantage! This is a premium '
     "endpoint and there are multiple ways to unlock premium endpoints: (1) "
@@ -424,6 +435,54 @@ def test_fetch_stock_rate_limit(src, type, search_ok, requests_mock):
     with pytest.raises(exceptions.RateLimit) as e:
         src.fetch(Series("IBM", "", type, "2021-01-04", "2021-01-08"))
     assert "rate limit" in str(e.value)
+
+
+def test_fetch_stock_per_second_rate_limit(src, type, search_ok, requests_mock):
+    requests_mock.add(responses.GET, stock_url, body=per_second_rate_limit_json)
+    with pytest.raises(exceptions.RateLimit) as e:
+        src.fetch(Series("IBM", "", type, "2021-01-04", "2021-01-08"))
+    assert "rate limit" in str(e.value).lower()
+
+
+def test_fetch_stock_with_explicit_gbx_quote(
+    src, type, physical_list_ok, digital_list_ok, requests_mock
+):
+    body = (Path(os.path.splitext(__file__)[0]) / "ibm-partial.json").read_text()
+    requests_mock.add(responses.GET, stock_url, body=body, status=200)
+
+    series = src.fetch(Series("FWRG.LON", "GBX", type, "2021-01-04", "2021-01-08"))
+
+    stock_req = requests_mock.calls[2].request
+    assert stock_req.params["function"] == "TIME_SERIES_DAILY"
+    assert stock_req.params["symbol"] == "FWRG.LON"
+    assert (series.base, series.quote) == ("FWRG.LON", "GBX")
+    assert len(series.prices) == 5
+    assert series.prices[0] == Price("2021-01-04", Decimal("123.94"))
+
+
+def test_fetch_stock_lon_without_quote_skips_search_and_uses_gbx(
+    src, type, requests_mock
+):
+    body = (Path(os.path.splitext(__file__)[0]) / "ibm-partial.json").read_text()
+    requests_mock.add(responses.GET, stock_url, body=body, status=200)
+
+    series = src.fetch(Series("FWRG.LON", "", type, "2021-01-04", "2021-01-08"))
+
+    assert len(requests_mock.calls) == 1
+    stock_req = requests_mock.calls[0].request
+    assert stock_req.params["function"] == "TIME_SERIES_DAILY"
+    assert stock_req.params["symbol"] == "FWRG.LON"
+    assert (series.base, series.quote) == ("FWRG.LON", "GBX")
+    assert len(series.prices) == 5
+    assert series.prices[0] == Price("2021-01-04", Decimal("123.94"))
+
+
+def test_fetch_stock_with_explicit_gbx_quote_non_gbx_stock_rejected(
+    src, type, physical_list_ok, digital_list_ok, search_ok, ibm_ok
+):
+    with pytest.raises(exceptions.InvalidPair) as e:
+        src.fetch(Series("IBM", "GBX", type, "2021-01-04", "2021-01-08"))
+    assert "quoted in pence" in str(e.value)
 
 
 def test_fetch_stock_premium(src, search_ok, requests_mock):
