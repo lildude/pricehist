@@ -44,3 +44,4 @@ runs:
       run: |
         VENV_PATH=$(poetry env info --path)
         echo "$VENV_PATH/bin" >> $GITHUB_PATH
+        echo "VIRTUAL_ENV=$VENV_PATH" >> $GITHUB_ENV
