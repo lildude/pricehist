@@ -37,7 +37,7 @@ runs:
 
     - name: Install dependencies
       shell: bash
-      run: poetry install
+      run: poetry install --with dev
 
     - name: Add Poetry virtualenv to PATH
       shell: bash
