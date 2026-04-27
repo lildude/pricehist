@@ -41,6 +41,24 @@ def test_rename_quote(series):
     assert result.quote == "NEWQUOTE"
 
 
+def test_divide_by_100(series):
+    subject = replace(
+        series,
+        prices=[
+            Price("2021-01-01", Decimal("100")),
+            Price("2021-01-02", Decimal("200.50")),
+            Price("2021-01-03", Decimal("5000.99")),
+        ],
+    )
+    result = subject.divide_by_100()
+    amounts = [p.amount for p in result.prices]
+    assert amounts == [
+        Decimal("1"),
+        Decimal("2.0050"),
+        Decimal("50.0099"),
+    ]
+
+
 def test_quantize_rounds_half_even(series):
     subject = replace(
         series,

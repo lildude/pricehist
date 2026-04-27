@@ -1,3 +1,4 @@
+import inspect
 import re
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
@@ -43,6 +44,7 @@ def source(pricehist_source):
             time_end: datetime,
         ) -> Optional[List[SourcePrice]]:
             base, quote, type = self._decode(ticker)
+            requested_quote = self._requested_quote_currency()
 
             start = time_begin.date().isoformat()
             end = time_end.date().isoformat()
@@ -54,6 +56,9 @@ def source(pricehist_source):
                 series = pricehist_source.fetch(Series(base, quote, type, start, end))
             except exceptions.SourceError:
                 return None
+
+            if self._should_convert_yahoo_pence_to_gbp(series.quote, requested_quote):
+                series = series.divide_by_100().rename_quote("GBP")
 
             return [
                 SourcePrice(
@@ -73,5 +78,33 @@ def source(pricehist_source):
             base, quote, candidate_type = (parts + [""] * 3)[0:3]
             type = candidate_type or pricehist_source.types()[0]
             return (base, quote, type)
+
+        def _source_id(self) -> str:
+            try:
+                return pricehist_source.id()
+            except Exception:
+                return ""
+
+        def _requested_quote_currency(self) -> Optional[str]:
+            frame = inspect.currentframe()
+            try:
+                frame = frame.f_back
+                while frame is not None:
+                    dprice = frame.f_locals.get("dprice")
+                    if dprice is not None and hasattr(dprice, "quote"):
+                        return dprice.quote
+                    frame = frame.f_back
+            finally:
+                del frame
+            return None
+
+        def _should_convert_yahoo_pence_to_gbp(
+            self, fetched_quote: str, requested_quote: Optional[str]
+        ) -> bool:
+            return (
+                self._source_id() == "yahoo"
+                and fetched_quote == "GBp"
+                and requested_quote == "GBP"
+            )
 
     return Source
